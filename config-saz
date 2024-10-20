@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="fa">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تولید کننده کانفیگ</title>
+    <style>
+        body {
+            background-color: #121212;
+            color: #ffffff;
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            text-align: center;
+        }
+        input[type="text"] {
+            padding: 10px;
+            width: 80%;
+            margin: 10px 0;
+            border: none;
+            border-radius: 5px;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #6200ea;
+            color: #ffffff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #3700b3;
+        }
+        .warning {
+            color: orange;
+            font-weight: bold;
+        }
+        pre {
+            text-align: left;
+            background-color: #1e1e1e;
+            padding: 10px;
+            border-radius: 5px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>تولید کننده کانفیگ</h1>
+
+    <a href="https://github.com/mahsanet/NikaNG/releases/download/v1.8.38/NikaNG_1.8.38_universal-signed.apk" target="_blank">
+        <button>برای دانلود نیکا ان جی کلیک کنید</button>
+    </a>
+
+    <input type="text" id="userName" placeholder="نام دلخواه خود را وارد کنید">
+    <button onclick="generateConfig()">تولید کانفیگ</button>
+
+    <div class="warning">حتما از نیکا ان جی یا مهسا ان جی استفاده کنید⚠️</div>
+
+    <h2>پیکربندی JSON:</h2>
+    <pre id="configOutput"></pre>
+
+    <script>
+        function generateConfig() {
+            const userName = document.getElementById("userName").value || "Example";
+            const config = {
+                "remarks": `@Cloudflareiran || ${userName}`,
+                "log": { "loglevel": "warning" },
+                "dns": {
+                    "hosts": {
+                        "domain:googleapis.cn": ["googleapis.com"]
+                    },
+                    "servers": ["https://8.8.8.8/dns-query"],
+                    "tag": "dns"
+                },
+                "inbounds": [
+                    {
+                        "port": 10808,
+                        "protocol": "socks",
+                        "settings": { "auth": "noauth", "udp": true, "userLevel": 8 },
+                        "sniffing": { "destOverride": ["http", "tls"], "enabled": true, "routeOnly": true },
+                        "tag": "socks-in"
+                    },
+                    {
+                        "port": 10809,
+                        "protocol": "http",
+                        "settings": { "auth": "noauth", "udp": true, "userLevel": 8 },
+                        "sniffing": { "destOverride": ["http", "tls"], "enabled": true, "routeOnly": true },
+                        "tag": "http-in"
+                    },
+                    {
+                        "listen": "127.0.0.1",
+                        "port": 10853,
+                        "protocol": "dokodemo-door",
+                        "settings": { "address": "1.1.1.1", "network": "tcp,udp", "port": 53 },
+                        "tag": "dns-in"
+                    }
+                ],
+                "outbounds": [
+                    {
+                        "protocol": "vless",
+                        "settings": {
+                            "vnext": [
+                                {
+                                    "address": "172.66.47.204",
+                                    "port": 2053,
+                                    "users": [
+                                        {
+                                            "id": "89b3cbba-e6ac-485a-9481-976a0415eab9",
+                                            "encryption": "none",
+                                            "level": 8
+                                        }
+                                    ]
+                                }
+                            ]
+                        },
+                        "streamSettings": {
+                            "network": "ws",
+                            "security": "tls",
+                            "sockopt": { "dialerProxy": "fragment" },
+                            "wsSettings": {
+                                "headers": {
+                                    "Host": "cloudflareiran4.pages.dev",
+                                    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36"
+                                },
+                                "path": "/WT1gNg2NzEa0euQo?ed=2560"
+                            },
+                            "tlsSettings": {
+                                "allowInsecure": false,
+                                "fingerprint": "randomized",
+                                "alpn": ["h2", "http/1.1"],
+                                "serverName": "CLOUDFlarEiRaN4.pAges.dEv"
+                            }
+                        },
+                        "tag": "proxy"
+                    },
+                    {
+                        "tag": "fragment",
+                        "protocol": "freedom",
+                        "settings": {
+                            "fragment": {
+                                "packets": "tlshello",
+                                "length": "100-200",
+                                "interval": "1-1"
+                            },
+                            "domainStrategy": "UseIP"
+                        },
+                        "streamSettings": {
+                            "sockopt": {
+                                "tcpKeepAliveIdle": 100,
+                                "tcpNoDelay": true
+                            }
+                        }
+                    },
+                    {
+                        "protocol": "dns",
+                        "tag": "dns-out"
+                    },
+                    {
+                        "protocol": "freedom",
+                        "settings": {},
+                        "tag": "direct"
+                    },
+                    {
+                        "protocol": "blackhole",
+                        "settings": {
+                            "response": {
+                                "type": "http"
+                            }
+                        },
+                        "tag": "block"
+                    }
+                ],
+                "policy": {
+                    "levels": {
+                        "8": {
+                            "connIdle": 300,
+                            "downlinkOnly": 1,
+                            "handshake": 4,
+                            "uplinkOnly": 1
+                        }
+                    },
+                    "system": {
+                        "statsOutboundUplink": true,
+                        "statsOutboundDownlink": true
+                    }
+                },
+                "routing": {
+                    "domainStrategy": "IPIfNonMatch",
+                    "rules": [
+                        {
+                            "inboundTag": ["dns-in"],
+                            "outboundTag": "dns-out",
+                            "type": "field"
+                        },
+                        {
+                            "inboundTag": ["socks-in", "http-in"],
+                            "port": "53",
+                            "outboundTag": "dns-out",
+                            "type": "field"
+                        },
+                        {
+                            "network": "tcp,udp",
+                            "outboundTag": "proxy",
+                            "type": "field"
+                        }
+                    ]
+                },
+                "stats": {}
+            };
+
+            const configOutput = JSON.stringify(config, null, 2);
+            document.getElementById("configOutput").textContent = configOutput;
+
+            // Copy to clipboard
+            navigator.clipboard.writeText(configOutput).then(() => {
+                alert("متن کانفیگ در کلیپ بورد کپی شد");
+            });
+        }
+    </script>
+
+</body>
+</html>
